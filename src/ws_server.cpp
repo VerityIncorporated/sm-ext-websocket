@@ -9,27 +9,27 @@ WebSocketServer::WebSocketServer(const std::string& host, int port, int addressF
 	addressFamily,
 	pingInterval)
 {
-	this->m_webSocketServer.setOnClientMessageCallback([this](std::shared_ptr<ix::ConnectionState> connectionState, ix::WebSocket& webSocket, const ix::WebSocketMessagePtr& msg) {
+	m_webSocketServer.setOnClientMessageCallback([this](std::shared_ptr<ix::ConnectionState> connectionState, ix::WebSocket& webSocket, const ix::WebSocketMessagePtr& msg) {
 		switch (msg->type)
 		{
 			case ix::WebSocketMessageType::Open:
 			{
-				this->OnOpen(msg->openInfo, connectionState);
+				OnOpen(msg->openInfo, connectionState);
 				break;
 			}
 			case ix::WebSocketMessageType::Message:
 			{
-				this->OnMessage(msg->str, connectionState, &webSocket);
+				OnMessage(msg->str, connectionState, &webSocket);
 				break;
 			}
 			case ix::WebSocketMessageType::Close:
 			{
-				this->OnClose(msg->closeInfo, connectionState);
+				OnClose(msg->closeInfo, connectionState);
 				break;
 			}
 			case ix::WebSocketMessageType::Error:
 			{
-				this->OnError(msg->errorInfo, connectionState);
+				OnError(msg->errorInfo, connectionState);
 				break;
 			}
 		}
@@ -38,12 +38,12 @@ WebSocketServer::WebSocketServer(const std::string& host, int port, int addressF
 
 WebSocketServer::~WebSocketServer() 
 {
-	this->m_webSocketServer.stop();
+	m_webSocketServer.stop();
 }
 
 void WebSocketServer::OnMessage(const std::string& message, std::shared_ptr<ix::ConnectionState> connectionState, ix::WebSocket* client) 
 {
-	if (!this->pMessageForward || !this->pMessageForward->GetFunctionCount())
+	if (!pMessageForward || !pMessageForward->GetFunctionCount())
 	{
 		return;
 	}
@@ -51,30 +51,30 @@ void WebSocketServer::OnMessage(const std::string& message, std::shared_ptr<ix::
 	g_TaskQueue.Push([this, message, connectionState, client]()
 	{
 		HandleError err;
-		HandleSecurity sec(NULL, myself->GetIdentity());
+		HandleSecurity sec(nullptr, myself->GetIdentity());
 
 		WebSocketClient* pWebSocketClient = new WebSocketClient(client);
 
-		pWebSocketClient->m_websocket_handle = handlesys->CreateHandleEx(g_htWsClient, pWebSocketClient, &sec, NULL, &err);
+		pWebSocketClient->m_websocket_handle = handlesys->CreateHandleEx(g_htWsClient, pWebSocketClient, &sec, nullptr, &err);
 		if (!pWebSocketClient->m_websocket_handle) return;
 		pWebSocketClient->m_keepConnecting = true;
 
 		std::string remoteAddress = connectionState->getRemoteIp() + ":" + std::to_string(connectionState->getRemotePort());
-		this->pMessageForward->PushCell(this->m_webSocketServer_handle);
-		this->pMessageForward->PushCell(pWebSocketClient->m_websocket_handle);
-		this->pMessageForward->PushString(message.c_str());
-		this->pMessageForward->PushCell(message.length());
-		this->pMessageForward->PushString(remoteAddress.c_str());
-		this->pMessageForward->PushString(connectionState->getId().c_str());
-		this->pMessageForward->Execute(NULL);
+		pMessageForward->PushCell(m_webSocketServer_handle);
+		pMessageForward->PushCell(pWebSocketClient->m_websocket_handle);
+		pMessageForward->PushString(message.c_str());
+		pMessageForward->PushCell(message.length());
+		pMessageForward->PushString(remoteAddress.c_str());
+		pMessageForward->PushString(connectionState->getId().c_str());
+		pMessageForward->Execute(nullptr);
 		
-		handlesys->FreeHandle(pWebSocketClient->m_websocket_handle, NULL);
+		handlesys->FreeHandle(pWebSocketClient->m_websocket_handle, nullptr);
 	});
 }
 
 void WebSocketServer::OnOpen(ix::WebSocketOpenInfo openInfo, std::shared_ptr<ix::ConnectionState> connectionState) 
 {
-	if (!this->pOpenForward || !this->pOpenForward->GetFunctionCount())
+	if (!pOpenForward || !pOpenForward->GetFunctionCount())
 	{
 		return;
 	}
@@ -82,16 +82,16 @@ void WebSocketServer::OnOpen(ix::WebSocketOpenInfo openInfo, std::shared_ptr<ix:
 	g_TaskQueue.Push([this, openInfo, connectionState]()
 	{
 		std::string remoteAddress = connectionState->getRemoteIp() + ":" + std::to_string(connectionState->getRemotePort());
-		this->pOpenForward->PushCell(this->m_webSocketServer_handle);
-		this->pOpenForward->PushString(remoteAddress.c_str());
-		this->pOpenForward->PushString(connectionState->getId().c_str());
-		this->pOpenForward->Execute(NULL);
+		pOpenForward->PushCell(m_webSocketServer_handle);
+		pOpenForward->PushString(remoteAddress.c_str());
+		pOpenForward->PushString(connectionState->getId().c_str());
+		pOpenForward->Execute(nullptr);
 	});
 }
 
 void WebSocketServer::OnClose(ix::WebSocketCloseInfo closeInfo, std::shared_ptr<ix::ConnectionState> connectionState) 
 {
-	if (!this->pCloseForward || !this->pCloseForward->GetFunctionCount())
+	if (!pCloseForward || !pCloseForward->GetFunctionCount())
 	{
 		return;
 	}
@@ -99,18 +99,18 @@ void WebSocketServer::OnClose(ix::WebSocketCloseInfo closeInfo, std::shared_ptr<
 	g_TaskQueue.Push([this, closeInfo, connectionState]()
 	{
 		std::string remoteAddress = connectionState->getRemoteIp() + ":" + std::to_string(connectionState->getRemotePort());
-		this->pCloseForward->PushCell(this->m_webSocketServer_handle);
-		this->pCloseForward->PushCell(closeInfo.code);
-		this->pCloseForward->PushString(closeInfo.reason.c_str());
-		this->pCloseForward->PushString(remoteAddress.c_str());
-		this->pCloseForward->PushString(connectionState->getId().c_str());
-		this->pCloseForward->Execute(NULL);
+		pCloseForward->PushCell(m_webSocketServer_handle);
+		pCloseForward->PushCell(closeInfo.code);
+		pCloseForward->PushString(closeInfo.reason.c_str());
+		pCloseForward->PushString(remoteAddress.c_str());
+		pCloseForward->PushString(connectionState->getId().c_str());
+		pCloseForward->Execute(nullptr);
 	});
 }
 
 void WebSocketServer::OnError(ix::WebSocketErrorInfo errorInfo, std::shared_ptr<ix::ConnectionState> connectionState) 
 {
-	if (!this->pErrorForward || !this->pErrorForward->GetFunctionCount())
+	if (!pErrorForward || !pErrorForward->GetFunctionCount())
 	{
 		return;
 	}
@@ -118,16 +118,16 @@ void WebSocketServer::OnError(ix::WebSocketErrorInfo errorInfo, std::shared_ptr<
 	g_TaskQueue.Push([this, errorInfo, connectionState]()
 	{
 		std::string remoteAddress = connectionState->getRemoteIp() + ":" + std::to_string(connectionState->getRemotePort());
-		this->pErrorForward->PushCell(this->m_webSocketServer_handle);
-		this->pErrorForward->PushString(errorInfo.reason.c_str());
-		this->pErrorForward->PushString(remoteAddress.c_str());
-		this->pErrorForward->PushString(connectionState->getId().c_str());
-		this->pErrorForward->Execute(NULL);
+		pErrorForward->PushCell(m_webSocketServer_handle);
+		pErrorForward->PushString(errorInfo.reason.c_str());
+		pErrorForward->PushString(remoteAddress.c_str());
+		pErrorForward->PushString(connectionState->getId().c_str());
+		pErrorForward->Execute(nullptr);
 	});
 }
 
 void WebSocketServer::broadcastMessage(const std::string& message) {
-	auto clients = this->m_webSocketServer.getClients();
+	auto clients = m_webSocketServer.getClients();
 
 	for (const auto& client : clients)
 	{
@@ -136,7 +136,7 @@ void WebSocketServer::broadcastMessage(const std::string& message) {
 }
 
 bool WebSocketServer::sendToClient(const std::string& clientId, const std::string& message) {
-	auto clients = this->m_webSocketServer.getClients();
+	auto clients = m_webSocketServer.getClients();
 	
 	for (const auto& client : clients)
 	{

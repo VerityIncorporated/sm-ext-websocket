@@ -4,33 +4,33 @@ WebSocketClient::WebSocketClient(ix::WebSocket* existingSocket) : m_webSocket(ex
 
 WebSocketClient::WebSocketClient(const char* url, uint8_t type) 
 {
-	this->m_webSocket = new ix::WebSocket();
-	this->m_webSocket->setUrl(url);
-	this->m_webSocket->disableAutomaticReconnection();
-	this->m_callback_type = type;
+	m_webSocket = new ix::WebSocket();
+	m_webSocket->setUrl(url);
+	m_webSocket->disableAutomaticReconnection();
+	m_callback_type = type;
 
-	this->m_webSocket->setOnMessageCallback([this](const ix::WebSocketMessagePtr& msg) {
+	m_webSocket->setOnMessageCallback([this](const ix::WebSocketMessagePtr& msg) {
 		switch (msg->type)
 		{
 			case ix::WebSocketMessageType::Message:
 			{
-				this->OnMessage(msg->str);
+				OnMessage(msg->str);
 				break;
 			}
 			case ix::WebSocketMessageType::Open:
 			{
-				this->m_headers = msg->openInfo.headers;
-				this->OnOpen(msg->openInfo);
+				m_headers = msg->openInfo.headers;
+				OnOpen(msg->openInfo);
 				break;
 			}
 			case ix::WebSocketMessageType::Close:
 			{
-				this->OnClose(msg->closeInfo);
+				OnClose(msg->closeInfo);
 				break;
 			}
 			case ix::WebSocketMessageType::Error:
 			{
-				this->OnError(msg->errorInfo);
+				OnError(msg->errorInfo);
 				break;
 			}
 		}
@@ -39,18 +39,18 @@ WebSocketClient::WebSocketClient(const char* url, uint8_t type)
 
 WebSocketClient::~WebSocketClient() 
 {
-	if (!this->m_keepConnecting)
-		this->m_webSocket->stop();
+	if (!m_keepConnecting)
+		m_webSocket->stop();
 }
 
 bool WebSocketClient::IsConnected()
 {
-	return this->m_webSocket->getReadyState() == ix::ReadyState::Open;
+	return m_webSocket->getReadyState() == ix::ReadyState::Open;
 }
 
 void WebSocketClient::OnMessage(const std::string& message) 
 {
-	if (!this->pMessageForward || !this->pMessageForward->GetFunctionCount())
+	if (!pMessageForward || !pMessageForward->GetFunctionCount())
 	{
 		return;
 	}
@@ -59,51 +59,49 @@ void WebSocketClient::OnMessage(const std::string& message)
 	{
 		const size_t messageLength = message.length() + 1;
 
-		switch (this->m_callback_type)
+		switch (m_callback_type)
 		{
 			case Websocket_STRING:
 			{
-				this->pMessageForward->PushCell(this->m_websocket_handle);
-				this->pMessageForward->PushString(message.c_str());
-				this->pMessageForward->PushCell(messageLength);
-				this->pMessageForward->Execute(NULL);
+				pMessageForward->PushCell(m_websocket_handle);
+				pMessageForward->PushString(message.c_str());
+				pMessageForward->PushCell(messageLength);
+				pMessageForward->Execute(nullptr);
 				break;
 			}
 			case WebSocket_JSON:
 			{
-				YYJsonWrapper* pYYJsonWrapper = new YYJsonWrapper();
+				auto pYYJsonWrapper = CreateWrapper();
 
 				yyjson_read_err readError;
-				yyjson_doc *idoc = yyjson_read_opts(const_cast<char*>(message.c_str()), message.length(), 0, NULL, &readError);
+				yyjson_doc *idoc = yyjson_read_opts(const_cast<char*>(message.c_str()), message.length(), 0, nullptr, &readError);
 
 				if (readError.code)
 				{
+					yyjson_doc_free(idoc);
 					smutils->LogError(myself, "parse JSON message error (%u): %s at position: %d", readError.code, readError.msg, readError.pos);
-					delete pYYJsonWrapper;
 					return;
 				}
 
-				pYYJsonWrapper->m_pDocument_mut = yyjson_doc_mut_copy(idoc, NULL);
-				pYYJsonWrapper->m_pVal_mut = yyjson_mut_doc_get_root(pYYJsonWrapper->m_pDocument_mut);
-				yyjson_doc_free(idoc);
+				pYYJsonWrapper->m_pDocument = WrapImmutableDocument(idoc);
+				pYYJsonWrapper->m_pVal = yyjson_doc_get_root(idoc);
 
 				HandleError err;
-				HandleSecurity pSec(NULL, myself->GetIdentity());
-				this->m_json_handle = handlesys->CreateHandleEx(g_htJSON, pYYJsonWrapper, &pSec, NULL, &err);
+				HandleSecurity pSec(nullptr, myself->GetIdentity());
+				m_json_handle = handlesys->CreateHandleEx(g_htJSON, pYYJsonWrapper.release(), &pSec, nullptr, &err);
 
-				if (!this->m_json_handle)
+				if (!m_json_handle)
 				{
 					smutils->LogError(myself, "Could not create JSON handle (error %d)", err);
-					delete pYYJsonWrapper;
 					return;
 				}
 
-				this->pMessageForward->PushCell(this->m_websocket_handle);
-				this->pMessageForward->PushCell(this->m_json_handle);
-				this->pMessageForward->PushCell(messageLength);
-				this->pMessageForward->Execute(NULL);
+				pMessageForward->PushCell(m_websocket_handle);
+				pMessageForward->PushCell(m_json_handle);
+				pMessageForward->PushCell(messageLength);
+				pMessageForward->Execute(nullptr);
 
-				handlesys->FreeHandle(this->m_json_handle, &pSec);
+				handlesys->FreeHandle(m_json_handle, &pSec);
 				break;
 			}
 		}
@@ -112,21 +110,21 @@ void WebSocketClient::OnMessage(const std::string& message)
 
 void WebSocketClient::OnOpen(ix::WebSocketOpenInfo openInfo) 
 {
-	if (!this->pOpenForward || !this->pOpenForward->GetFunctionCount())
+	if (!pOpenForward || !pOpenForward->GetFunctionCount())
 	{
 		return;
 	}
 
 	g_TaskQueue.Push([this, openInfo]()
 	{
-		this->pOpenForward->PushCell(this->m_websocket_handle);
-		this->pOpenForward->Execute(NULL);
+		pOpenForward->PushCell(m_websocket_handle);
+		pOpenForward->Execute(nullptr);
 	});
 }
 
 void WebSocketClient::OnClose(ix::WebSocketCloseInfo closeInfo) 
 {
-	if (!this->pCloseForward || !this->pCloseForward->GetFunctionCount())
+	if (!pCloseForward || !pCloseForward->GetFunctionCount())
 	{
 		return;
 	}
@@ -135,24 +133,24 @@ void WebSocketClient::OnClose(ix::WebSocketCloseInfo closeInfo)
 	// 2024/06/30 - 23:09 - Fixed
 	g_TaskQueue.Push([this, closeInfo]()
 	{
-		this->pCloseForward->PushCell(this->m_websocket_handle);
-		this->pCloseForward->PushCell(closeInfo.code);
-		this->pCloseForward->PushString(closeInfo.reason.c_str());
-		this->pCloseForward->Execute(NULL);
+		pCloseForward->PushCell(m_websocket_handle);
+		pCloseForward->PushCell(closeInfo.code);
+		pCloseForward->PushString(closeInfo.reason.c_str());
+		pCloseForward->Execute(nullptr);
 	});
 }
 
 void WebSocketClient::OnError(ix::WebSocketErrorInfo errorInfo) 
 {
-	if (!this->pErrorForward || !this->pErrorForward->GetFunctionCount())
+	if (!pErrorForward || !pErrorForward->GetFunctionCount())
 	{
 		return;
 	}
 
 	g_TaskQueue.Push([this, errorInfo]()
 	{
-		this->pErrorForward->PushCell(this->m_websocket_handle);
-		this->pErrorForward->PushString(errorInfo.reason.c_str());
-		this->pErrorForward->Execute(NULL);
+		pErrorForward->PushCell(m_websocket_handle);
+		pErrorForward->PushString(errorInfo.reason.c_str());
+		pErrorForward->Execute(nullptr);
 	});
 }

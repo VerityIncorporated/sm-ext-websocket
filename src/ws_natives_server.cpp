@@ -9,7 +9,7 @@ static WebSocketServer *GetWsServerPointer(IPluginContext *pContext, Handle_t Ha
 	if ((err = handlesys->ReadHandle(Handle, g_htWsServer, &sec, (void **)&server)) != HandleError_None)
 	{
 		pContext->ReportError("Invalid WebSocketServer handle %x (error %d)", Handle, err);
-		return NULL;
+		return nullptr;
 	}
 
 	return server;
@@ -24,7 +24,7 @@ static cell_t ws_CreateWebSocketServer(IPluginContext *pContext, const cell_t *p
 
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
-	pWebsocketServer->m_webSocketServer_handle = handlesys->CreateHandleEx(g_htWsServer, pWebsocketServer, &sec, NULL, &err);
+	pWebsocketServer->m_webSocketServer_handle = handlesys->CreateHandleEx(g_htWsServer, pWebsocketServer, &sec, nullptr, &err);
 
 	if (!pWebsocketServer->m_webSocketServer_handle)
 	{
@@ -46,7 +46,7 @@ static cell_t ws_SetMessageCallback(IPluginContext *pContext, const cell_t *para
 
 	IPluginFunction *callback = pContext->GetFunctionById(params[2]);
 	
-	pWebsocketServer->pMessageForward = forwards->CreateForwardEx(NULL, ET_Ignore, 6, NULL, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_String, Param_String);
+	pWebsocketServer->pMessageForward = forwards->CreateForwardEx(nullptr, ET_Ignore, 6, nullptr, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_String, Param_String);
 	if (!pWebsocketServer->pMessageForward || !pWebsocketServer->pMessageForward->AddFunction(callback))
 	{
 		pContext->ReportError("Could not create message forward.");
@@ -67,7 +67,7 @@ static cell_t ws_SetOpenCallback(IPluginContext *pContext, const cell_t *params)
 
 	IPluginFunction *callback = pContext->GetFunctionById(params[2]);
 
-	pWebsocketServer->pOpenForward = forwards->CreateForwardEx(NULL, ET_Ignore, 3, NULL, Param_Cell, Param_String, Param_String);
+	pWebsocketServer->pOpenForward = forwards->CreateForwardEx(nullptr, ET_Ignore, 3, nullptr, Param_Cell, Param_String, Param_String);
 	if (!pWebsocketServer->pOpenForward || !pWebsocketServer->pOpenForward->AddFunction(callback))
 	{
 		pContext->ReportError("Could not create open forward.");
@@ -88,7 +88,7 @@ static cell_t ws_SetCloseCallback(IPluginContext *pContext, const cell_t *params
 
 	IPluginFunction *callback = pContext->GetFunctionById(params[2]);
 
-	pWebsocketServer->pCloseForward = forwards->CreateForwardEx(NULL, ET_Ignore, 5, NULL, Param_Cell, Param_Cell, Param_String, Param_String, Param_String);
+	pWebsocketServer->pCloseForward = forwards->CreateForwardEx(nullptr, ET_Ignore, 5, nullptr, Param_Cell, Param_Cell, Param_String, Param_String, Param_String);
 	if (!pWebsocketServer->pCloseForward || !pWebsocketServer->pCloseForward->AddFunction(callback))
 	{
 		pContext->ReportError("Could not create close forward.");
@@ -109,7 +109,7 @@ static cell_t ws_SetErrorCallback(IPluginContext *pContext, const cell_t *params
 
 	IPluginFunction *callback = pContext->GetFunctionById(params[2]);
 
-	pWebsocketServer->pErrorForward = forwards->CreateForwardEx(NULL, ET_Ignore, 4, NULL, Param_Cell, Param_String, Param_String, Param_String);
+	pWebsocketServer->pErrorForward = forwards->CreateForwardEx(nullptr, ET_Ignore, 4, nullptr, Param_Cell, Param_String, Param_String, Param_String);
 	if (!pWebsocketServer->pErrorForward || !pWebsocketServer->pErrorForward->AddFunction(callback))
 	{
 		pContext->ReportError("Could not create error forward.");
@@ -271,5 +271,5 @@ const sp_nativeinfo_t ws_natives_server[] =
 	{"WebSocketServer.GetClients",             ws_GetClients},
 	{"WebSocketServer.DisableDeflate",         ws_DisableDeflate},
 	{"WebSocketServer.IsDeflateEnabled",       ws_IsDeflateEnabled},
-	{NULL, NULL}
+	{nullptr, nullptr}
 };

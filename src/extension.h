@@ -11,6 +11,7 @@
 #include <ws_server.h>
 #include <http_request.h>
 #include <queue.h>
+#include <random>
 
 class WebsocketExtension : public SDKExtension
 {

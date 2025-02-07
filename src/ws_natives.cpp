@@ -9,7 +9,7 @@ static WebSocketClient *GetWsPointer(IPluginContext *pContext, Handle_t Handle)
 	if ((err = handlesys->ReadHandle(Handle, g_htWsClient, &sec, (void **)&ws)) != HandleError_None)
 	{
 		pContext->ReportError("Invalid WebSocket handle %x (error %d)", Handle, err);
-		return NULL;
+		return nullptr;
 	}
 
 	return ws;
@@ -24,7 +24,7 @@ static cell_t ws_CreateWebSocketClient(IPluginContext *pContext, const cell_t *p
 
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
-	pWebSocketClient->m_websocket_handle = handlesys->CreateHandleEx(g_htWsClient, pWebSocketClient, &sec, NULL, &err);
+	pWebSocketClient->m_websocket_handle = handlesys->CreateHandleEx(g_htWsClient, pWebSocketClient, &sec, nullptr, &err);
 
 	if (pWebSocketClient->m_websocket_handle == BAD_HANDLE)
 	{
@@ -46,7 +46,7 @@ static cell_t ws_SetMessageCallback(IPluginContext *pContext, const cell_t *para
 
 	IPluginFunction *callback = pContext->GetFunctionById(params[2]);
 	
-	pWebSocketClient->pMessageForward = forwards->CreateForwardEx(NULL, ET_Ignore, 3, NULL, Param_Cell, pWebSocketClient->m_callback_type == WebSocket_JSON ? Param_Cell : Param_String, Param_Cell);
+	pWebSocketClient->pMessageForward = forwards->CreateForwardEx(nullptr, ET_Ignore, 3, nullptr, Param_Cell, pWebSocketClient->m_callback_type == WebSocket_JSON ? Param_Cell : Param_String, Param_Cell);
 	if (!pWebSocketClient->pMessageForward || !pWebSocketClient->pMessageForward->AddFunction(callback))
 	{
 		pContext->ReportError("Could not create message forward.");
@@ -67,7 +67,7 @@ static cell_t ws_SetOpenCallback(IPluginContext *pContext, const cell_t *params)
 
 	IPluginFunction *callback = pContext->GetFunctionById(params[2]);
 
-	pWebSocketClient->pOpenForward = forwards->CreateForwardEx(NULL, ET_Ignore, 1, NULL, Param_Cell);
+	pWebSocketClient->pOpenForward = forwards->CreateForwardEx(nullptr, ET_Ignore, 1, nullptr, Param_Cell);
 	if (!pWebSocketClient->pOpenForward || !pWebSocketClient->pOpenForward->AddFunction(callback))
 	{
 		pContext->ReportError("Could not create open forward.");
@@ -88,7 +88,7 @@ static cell_t ws_SetCloseCallback(IPluginContext *pContext, const cell_t *params
 
 	IPluginFunction *callback = pContext->GetFunctionById(params[2]);
 
-	pWebSocketClient->pCloseForward = forwards->CreateForwardEx(NULL, ET_Ignore, 3, NULL, Param_Cell, Param_Cell, Param_String);
+	pWebSocketClient->pCloseForward = forwards->CreateForwardEx(nullptr, ET_Ignore, 3, nullptr, Param_Cell, Param_Cell, Param_String);
 	if (!pWebSocketClient->pCloseForward || !pWebSocketClient->pCloseForward->AddFunction(callback))
 	{
 		pContext->ReportError("Could not create close forward.");
@@ -109,7 +109,7 @@ static cell_t ws_SetErrorCallback(IPluginContext *pContext, const cell_t *params
 
 	IPluginFunction *callback = pContext->GetFunctionById(params[2]);
 
-	pWebSocketClient->pErrorForward = forwards->CreateForwardEx(NULL, ET_Ignore, 2, NULL, Param_Cell, Param_String);
+	pWebSocketClient->pErrorForward = forwards->CreateForwardEx(nullptr, ET_Ignore, 2, nullptr, Param_Cell, Param_String);
 	if (!pWebSocketClient->pErrorForward || !pWebSocketClient->pErrorForward->AddFunction(callback))
 	{
 		pContext->ReportError("Could not create error forward.");
@@ -187,7 +187,7 @@ static cell_t ws_GetHeader(IPluginContext *pContext, const cell_t *params)
 	auto it = pWebSocketClient->m_headers.find(key);
 
 	if (it != pWebSocketClient->m_headers.end()) {
-		pContext->StringToLocalUTF8(params[3], params[4], it->second.c_str(), NULL);
+		pContext->StringToLocalUTF8(params[3], params[4], it->second.c_str(), nullptr);
 		return 1;
 	}
 
@@ -251,7 +251,7 @@ static cell_t ws_WriteJSON(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	char *json_str = yyjson_mut_val_write(pYYJsonWrapper->m_pVal_mut, 0, NULL);
+	char *json_str = yyjson_mut_val_write(pYYJsonWrapper->m_pVal_mut, 0, nullptr);
 	
 	if (!json_str)
 	{
@@ -382,5 +382,5 @@ const sp_nativeinfo_t ws_natives[] =
 	{"WebSocket.HandshakeTimeout.set",   ws_SetHandshakeTimeout},
 	{"WebSocket.PingInterval.get",       ws_PingInterval},
 	{"WebSocket.PingInterval.set",       ws_PingInterval},
-	{NULL, NULL}
+	{nullptr, nullptr}
 };

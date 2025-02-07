@@ -18,8 +18,8 @@ public:
 	ix::WebSocketServer m_webSocketServer;
 	Handle_t m_webSocketServer_handle = BAD_HANDLE;
 
-	IChangeableForward *pMessageForward = NULL;
-	IChangeableForward *pOpenForward = NULL;
-	IChangeableForward *pCloseForward = NULL;
-	IChangeableForward *pErrorForward = NULL;
+	IChangeableForward *pMessageForward = nullptr;
+	IChangeableForward *pOpenForward = nullptr;
+	IChangeableForward *pCloseForward = nullptr;
+	IChangeableForward *pErrorForward = nullptr;
 };

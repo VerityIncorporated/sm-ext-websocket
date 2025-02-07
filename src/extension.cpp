@@ -31,12 +31,12 @@ bool WebsocketExtension::SDK_OnLoad(char* error, size_t maxlen, bool late)
 	sharesys->RegisterLibrary(myself, "websocket");
 	
 	HandleAccess haDefaults;
-	handlesys->InitAccessDefaults(NULL, &haDefaults);
+	handlesys->InitAccessDefaults(nullptr, &haDefaults);
 	haDefaults.access[HandleAccess_Delete] = 0;
-	g_htWsClient = handlesys->CreateType("WebSocket", &g_WsClientHandler, 0, NULL, &haDefaults, myself->GetIdentity(), NULL);
-	g_htWsServer = handlesys->CreateType("WebSocketServer", &g_WsServerHandler, 0, NULL, &haDefaults, myself->GetIdentity(), NULL);
-	g_htHttp = handlesys->CreateType("HttpRequest", &g_HttpHandler, 0, NULL, &haDefaults, myself->GetIdentity(), NULL);
-	g_htJSON = handlesys->CreateType("YYJSON", &g_JSONHandler, 0, NULL, &haDefaults, myself->GetIdentity(), NULL);
+	g_htWsClient = handlesys->CreateType("WebSocket", &g_WsClientHandler, 0, nullptr, &haDefaults, myself->GetIdentity(), nullptr);
+	g_htWsServer = handlesys->CreateType("WebSocketServer", &g_WsServerHandler, 0, nullptr, &haDefaults, myself->GetIdentity(), nullptr);
+	g_htHttp = handlesys->CreateType("HttpRequest", &g_HttpHandler, 0, nullptr, &haDefaults, myself->GetIdentity(), nullptr);
+	g_htJSON = handlesys->CreateType("YYJSON", &g_JSONHandler, 0, nullptr, &haDefaults, myself->GetIdentity(), nullptr);
 
 	smutils->AddGameFrameHook(&OnGameFrame);
 	return true;
@@ -81,7 +81,7 @@ YYJsonWrapper *WebsocketExtension::GetJSONPointer(IPluginContext *pContext, Hand
 	if ((err = handlesys->ReadHandle(handle, g_htJSON, &sec, (void **)&pYYJsonWrapper)) != HandleError_None)
 	{
 		pContext->ReportError("Invalid JSON handle %x (error %d)", handle, err);
-		return NULL;
+		return nullptr;
 	}
 
 	return pYYJsonWrapper;

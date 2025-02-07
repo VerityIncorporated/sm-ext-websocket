@@ -18,7 +18,6 @@ for cxx in builder.targets:
     'src/json_natives.cpp',
     'src/ws_natives.cpp',
     'src/ws_natives_server.cpp',
-    'src/yyjsonwrapper.cpp',
     os.path.join(Extension.sm_root, 'public', 'smsdk_ext.cpp'),
   ]
 
