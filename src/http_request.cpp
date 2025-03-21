@@ -67,6 +67,7 @@ void HttpRequest::onResponse(const ix::HttpResponsePtr response)
 		this->pResponseForward->PushCell(this->m_httpclient_handle);
 		this->pResponseForward->PushString(response->body.c_str());
 		this->pResponseForward->PushCell(response->statusCode);
+		this->pResponseForward->PushCell(response->body.size());
 		this->pResponseForward->Execute(nullptr);
 
 		handlesys->FreeHandle(this->m_httpclient_handle, &sec);

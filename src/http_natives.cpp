@@ -47,7 +47,7 @@ static cell_t http_SetResponseCallback(IPluginContext *pContext, const cell_t *p
 
 	IPluginFunction *callback = pContext->GetFunctionById(params[2]);
 	
-	pHttpRequest->pResponseForward = forwards->CreateForwardEx(nullptr, ET_Ignore, 3, nullptr, Param_Cell, Param_String, Param_Cell);
+	pHttpRequest->pResponseForward = forwards->CreateForwardEx(nullptr, ET_Ignore, 4, nullptr, Param_Cell, Param_String, Param_Cell, Param_Cell);
 	if (!pHttpRequest->pResponseForward || !pHttpRequest->pResponseForward->AddFunction(callback))
 	{
 		pContext->ReportError("Could not create response forward.");

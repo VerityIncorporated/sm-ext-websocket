@@ -108,8 +108,11 @@ void onMessage(WebSocket ws, const YYJSON message, int wireSize)
 
       if (strcmp(events, "MESSAGE_CREATE") == 0)
       {
-        static char content[2048];
-        message.PtrGetString("/d/content", content, sizeof(content));
+				int len = message.PtrGetLength("/d/content");
+
+				char[] content = new char[len];
+        message.PtrGetString("/d/content", content, len);
+				
         PrintToServer("content: %s", content);
       }
     }

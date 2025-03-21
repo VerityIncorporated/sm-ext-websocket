@@ -172,7 +172,7 @@ methodmap WebSocket < Handle
   /**
   * Set the handshake timeout for the WebSocket connection
   *
-  * @param                   timeout timeout in seconds
+  * @param                   timeout in seconds
   */
   property int HandshakeTimeout {
     public native set(int timeout);

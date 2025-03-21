@@ -62,6 +62,28 @@ enum YYJSON_SORT_ORDER
 methodmap YYJSON < Handle
 {
   /**
+  * Creates a JSON value using a format string and arguments
+  * Format specifiers:
+  * - s: string
+  * - i: integer
+  * - f: float
+  * - b: boolean
+  * - n: null
+  * - {: start object
+  * - }: end object
+  * - [: start array
+  * - ]: end array
+  *
+  * @param format             Format string
+  * @param ...                Arguments based on format string
+  *
+  * @return                   JSON handle
+  *
+  * @error                    If format string is invalid or arguments don't match
+  */
+  public static native any Pack(const char[] format, any ...);
+
+  /**
   * Iterates over the object's key-value pairs
   *
   * @note                    Needs to be freed using delete or CloseHandle()
@@ -335,7 +357,7 @@ methodmap YYJSON < Handle
   *
   * @note                    Needs to be freed using delete or CloseHandle()
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   *
   * @return                  The value referenced by the JSON pointer
   */
@@ -344,7 +366,7 @@ methodmap YYJSON < Handle
   /**
   * Get boolean value by a JSON Pointer
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   *
   * @return                  boolean value referenced by the JSON pointer
   */
@@ -353,7 +375,7 @@ methodmap YYJSON < Handle
   /**
   * Get float value by a JSON Pointer
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   *
   * @return                  float value referenced by the JSON pointer
   */
@@ -362,7 +384,7 @@ methodmap YYJSON < Handle
   /**
   * Get integer value by a JSON Pointer
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   *
   * @return                  integer value referenced by the JSON pointer
   */
@@ -371,36 +393,40 @@ methodmap YYJSON < Handle
   /**
   * Get integer64 value by a JSON Pointer
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   * @param buffer            Buffer to copy to
   * @param maxlength         Maximum size of the buffer
   *
+  * @return                  integer64 value referenced by the JSON pointer
   */
   public native bool PtrGetInt64(const char[] path, char[] buffer, int maxlength);
 
   /**
   * Get string value by a JSON Pointer
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   * @param buffer            Buffer to copy to
   * @param maxlength         Maximum size of the buffer
   *
+  * @return                  True on success, false on failure
   */
   public native bool PtrGetString(const char[] path, char[] buffer, int maxlength)
 
   /**
   * Get value is null by a JSON Pointer
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   *
+  * @return                  True if the value is null, false otherwise
   */
   public native bool PtrGetIsNull(const char[] path)
 
   /**
   * Get JSON content length (string length, array size, object size)
   * Returns 0 if val is NULL or type is not string/array/object
+  * if str including null-terminator
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   *
   * @return                  JSON content length
   */
@@ -411,7 +437,7 @@ methodmap YYJSON < Handle
   *
   * @note                    The parent nodes will be created if they do not exist. If the target value already exists, it will be replaced by the new value
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   * @param value             The value to be set, pass NULL to remove
   *
   * @return                  true if JSON pointer is valid and new value is set, false otherwise
@@ -423,7 +449,7 @@ methodmap YYJSON < Handle
   *
   * @note                    The parent nodes will be created if they do not exist. If the target value already exists, it will be replaced by the new value
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   * @param value             The boolean value to be set, pass NULL to remove
   *
   * @return                  true if JSON pointer is valid and new value is set, false otherwise
@@ -435,7 +461,7 @@ methodmap YYJSON < Handle
   *
   * @note                    The parent nodes will be created if they do not exist. If the target value already exists, it will be replaced by the new value
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   * @param value             The float value to be set, pass NULL to remove
   *
   * @return                  true if JSON pointer is valid and new value is set, false otherwise
@@ -447,7 +473,7 @@ methodmap YYJSON < Handle
   *
   * @note                    The parent nodes will be created if they do not exist. If the target value already exists, it will be replaced by the new value
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   * @param value             The integer value to be set, pass NULL to remove
   *
   * @return                  true if JSON pointer is valid and new value is set, false otherwise
@@ -459,7 +485,7 @@ methodmap YYJSON < Handle
   *
   * @note                    The parent nodes will be created if they do not exist. If the target value already exists, it will be replaced by the new value
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   * @param value             The intger64 value to be set, pass NULL to remove
   *
   * @return                  true if JSON pointer is valid and new value is set, false otherwise
@@ -471,7 +497,7 @@ methodmap YYJSON < Handle
   *
   * @note                    The parent nodes will be created if they do not exist. If the target value already exists, it will be replaced by the new value
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   * @param value             The string value to be set, pass NULL to remove
   *
   * @return                  true if JSON pointer is valid and new value is set, false otherwise
@@ -483,7 +509,7 @@ methodmap YYJSON < Handle
   *
   * @note                    The parent nodes will be created if they do not exist. If the target value already exists, it will be replaced by the new value
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   * @param value             The null value to be set, pass NULL to remove
   *
   * @return                  true if JSON pointer is valid and new value is set, false otherwise
@@ -493,7 +519,7 @@ methodmap YYJSON < Handle
   /**
   * Add (insert) value by a JSON pointer
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   * @param value             The value to be added
   *
   * @return                  true if JSON pointer is valid and new value is set, false otherwise
@@ -503,7 +529,7 @@ methodmap YYJSON < Handle
   /**
   * Add (insert) boolean value by a JSON pointer
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   * @param value             The boolean value to be added
   *
   * @return                  true if JSON pointer is valid and new value is set, false otherwise
@@ -513,7 +539,7 @@ methodmap YYJSON < Handle
   /**
   * Add (insert) float value by a JSON pointer
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   * @param value             The float value to be added
   *
   * @return                  true if JSON pointer is valid and new value is set, false otherwise
@@ -523,7 +549,7 @@ methodmap YYJSON < Handle
   /**
   * Add (insert) integer value by a JSON pointer
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   * @param value             The int value to be added
   *
   * @return                  true if JSON pointer is valid and new value is set, false otherwise
@@ -533,7 +559,7 @@ methodmap YYJSON < Handle
   /**
   * Add (insert) integer64 value by a JSON pointer
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   * @param value             The intger64 value to be added
   *
   * @return                  true if JSON pointer is valid and new value is set, false otherwise
@@ -543,7 +569,7 @@ methodmap YYJSON < Handle
   /**
   * Add (insert) string value by a JSON pointer
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   * @param value             The str value to be added
   *
   * @return                  true if JSON pointer is valid and new value is set, false otherwise
@@ -553,7 +579,7 @@ methodmap YYJSON < Handle
   /**
   * Add (insert) null value by a JSON pointer
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   *
   * @return                  true if JSON pointer is valid and new value is set, false otherwise
   */
@@ -562,11 +588,73 @@ methodmap YYJSON < Handle
   /**
   * Remove value by a JSON pointer
   *
-  * @param path              The JSON pointer string (UTF-8 with null-terminator)
+  * @param path              The JSON pointer string
   *
   * @return                  true if removed value, false otherwise
   */
   public native bool PtrRemove(const char[] path)
+
+  /**
+  * Try to get value by a JSON Pointer
+  *
+  * @param path              The JSON pointer string
+  * @param value             Handle to store value
+  *
+  * @return                  true on success, false otherwise
+  */
+  public native bool PtrTryGetVal(const char[] path, YYJSON &value);
+
+  /**
+  * Try to get boolean value by a JSON Pointer
+  *
+  * @param path              The JSON pointer string
+  * @param value             Store the boolean value
+  *
+  * @return                  true on success, false otherwise
+  */
+  public native bool PtrTryGetBool(const char[] path, bool &value);
+
+  /**
+  * Try to get float value by a JSON Pointer
+  *
+  * @param path              The JSON pointer string
+  * @param value             Store the float value
+  *
+  * @return                  true on success, false otherwise
+  */
+  public native bool PtrTryGetFloat(const char[] path, float &value);
+
+  /**
+  * Try to get integer value by a JSON Pointer
+  *
+  * @param path              The JSON pointer string
+  * @param value             Store the integer value
+  *
+  * @return                  true on success, false otherwise
+  */
+  public native bool PtrTryGetInt(const char[] path, int &value);
+
+  /**
+  * Try to get integer64 value by a JSON Pointer
+  *
+  * @param path              The JSON pointer string
+  * @param buffer            Buffer to store the integer64 value
+  * @param maxlength         Maximum length of the buffer
+  *
+  * @return                  true on success, false otherwise
+  */
+  public native bool PtrTryGetInt64(const char[] path, char[] buffer, int maxlength);
+
+  /**
+  * Try to get string value by a JSON Pointer
+  *
+  * @param path              The JSON pointer string
+  * @param buffer            Buffer to store the string value
+  * @param maxlength         Maximum length of the buffer
+  *
+  * @return                  true on success, false otherwise
+  */
+  public native bool PtrTryGetString(const char[] path, char[] buffer, int maxlength);
 
   /**
   * Retrieves json type
@@ -586,7 +674,7 @@ methodmap YYJSON < Handle
   * Retrieves json is array
   */
   property bool IsArray {
-  public native get();
+    public native get();
   }
 
   /**
@@ -597,9 +685,30 @@ methodmap YYJSON < Handle
   }
 
   /**
-  * Retrieves json is integer
+  * Retrieves json is integer (uint64_t/int64_t)
   */
   property bool IsInt {
+    public native get();
+  }
+
+  /**
+  * Retrieves json is unsigned integer (uint64_t)
+  */
+  property bool IsUint {
+    public native get();
+  }
+
+  /**
+  * Retrieves json is signed integer (int64_t)
+  */
+  property bool IsSint {
+    public native get();
+  }
+
+  /**
+  * Retrieves json is number (uint64_t/int64_t/double)
+  */
+  property bool IsNum {
     public native get();
   }
 
@@ -607,6 +716,20 @@ methodmap YYJSON < Handle
   * Retrieves json is boolean
   */
   property bool IsBool {
+    public native get();
+  }
+
+  /**
+  * Retrieves json is true
+  */
+  property bool IsTrue {
+    public native get();
+  }
+
+  /**
+  * Retrieves json is false
+  */
+  property bool IsFalse {
     public native get();
   }
 
@@ -628,6 +751,13 @@ methodmap YYJSON < Handle
   * Retrieves json is null
   */
   property bool IsNull {
+    public native get();
+  }
+
+  /**
+  * Retrieves json is container (array/object)
+  */
+  property bool IsCtn {
     public native get();
   }
 
@@ -667,6 +797,19 @@ methodmap YYJSONObject < YYJSON
   * @note Needs to be freed using delete or CloseHandle()
   */
   public native YYJSONObject();
+
+  /**
+  * Creates a new JSON object from an array of strings representing key-value pairs.
+  * The array must contain an even number of strings, where even indices are keys 
+  * and odd indices are values. Keys cannot be empty strings.
+  *
+  * @param pairs             Array of strings containing alternating keys and values.
+  * @param size              Total size of the array (must be even).
+  * @return                  New JSON object handle.
+  * @error                   If array size is invalid, any key is empty, or if creation fails.
+  *
+  */
+  public static native YYJSONObject FromStrings(const char[][] pairs, int size);
 
   /**
   * Loads a JSON object from a file
@@ -923,6 +1066,15 @@ methodmap YYJSONArray < YYJSON
   public native YYJSONArray();
 
   /**
+  * Creates a new JSON array from an array of strings.
+  *
+  * @param strings           Array of strings to create array from.
+  * @param size              Size of the array.
+  * @return                  New JSON array handle, or null if creation failed.
+  */
+  public static native YYJSONArray FromStrings(const char[][] strings, int size);
+
+  /**
   * Loads a JSON array from a file
   *
   * @param file              File to read from
@@ -947,7 +1099,7 @@ methodmap YYJSONArray < YYJSON
   *
   * @param index             Position in the array (starting from 0)
   *
-  * @return                  NULL if array is NULL/empty or the index is out of bounds
+  * @return                  Value handle on success, null if array is empty or index out of bounds
   */
   public native any Get(int index);
 
