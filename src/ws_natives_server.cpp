@@ -171,6 +171,21 @@ static cell_t ws_SendMessageToClient(IPluginContext *pContext, const cell_t *par
 	return pWebsocketServer->sendToClient(clientId, msg);
 }
 
+static cell_t ws_DisconnectClient(IPluginContext *pContext, const cell_t *params)
+{
+	WebSocketServer* pWebsocketServer = GetWsServerPointer(pContext, params[1]);
+
+	if (!pWebsocketServer)
+	{
+		return 0;
+	}
+
+	char *clientId;
+	pContext->LocalToString(params[2], &clientId);
+
+	return pWebsocketServer->disconnectClient(clientId);
+}
+
 static cell_t ws_BroadcastMessage(IPluginContext *pContext, const cell_t *params)
 {
 	WebSocketServer* pWebsocketServer = GetWsServerPointer(pContext, params[1]);
@@ -265,6 +280,7 @@ const sp_nativeinfo_t ws_natives_server[] =
 	{"WebSocketServer.Stop",                   ws_Stop},
 	{"WebSocketServer.BroadcastMessage",       ws_BroadcastMessage},
 	{"WebSocketServer.SendMessageToClient",    ws_SendMessageToClient},
+	{"WebSocketServer.DisconnectClient",       ws_DisconnectClient},
 	{"WebSocketServer.ClientsCount.get",       ws_GetClientsCount},
 	{"WebSocketServer.EnablePong.get",         ws_SetOrGetPongEnable},
 	{"WebSocketServer.EnablePong.set",         ws_SetOrGetPongEnable},

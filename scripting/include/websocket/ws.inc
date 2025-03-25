@@ -303,6 +303,13 @@ methodmap WebSocketServer < Handle
   public native bool SendMessageToClient(const char[] clientId, const char[] message);
 
   /**
+  * Forcibly disconnect client from websocket
+  *
+  * @param clientId          client id
+  */
+  public native bool DisconnectClient(const char[] clientId);
+
+  /**
   * Start the WebSocket server
   */
   public native void Start();
