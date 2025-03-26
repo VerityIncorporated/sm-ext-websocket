@@ -14,6 +14,7 @@ public:
 	void OnError(ix::WebSocketErrorInfo errorInfo, std::shared_ptr<ix::ConnectionState> connectionState);
 	void broadcastMessage(const std::string& message);
 	bool sendToClient(const std::string& clientId, const std::string& message);
+	bool disconnectClient(const std::string& clientId);
 	
 	ix::WebSocketServer m_webSocketServer;
 	Handle_t m_webSocketServer_handle = BAD_HANDLE;

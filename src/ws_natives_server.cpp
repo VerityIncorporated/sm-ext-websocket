@@ -171,6 +171,21 @@ static cell_t ws_SendMessageToClient(IPluginContext *pContext, const cell_t *par
 	return pWebsocketServer->sendToClient(clientId, msg);
 }
 
+static cell_t ws_DisconnectClient(IPluginContext *pContext, const cell_t *params)
+{
+	WebSocketServer* pWebsocketServer = GetWsServerPointer(pContext, params[1]);
+
+	if (!pWebsocketServer)
+	{
+		return 0;
+	}
+
+	char *clientId;
+	pContext->LocalToString(params[2], &clientId);
+
+	return pWebsocketServer->disconnectClient(clientId);
+}
+
 static cell_t ws_BroadcastMessage(IPluginContext *pContext, const cell_t *params)
 {
 	WebSocketServer* pWebsocketServer = GetWsServerPointer(pContext, params[1]);
@@ -250,8 +265,44 @@ static cell_t ws_IsDeflateEnabled(IPluginContext *pContext, const cell_t *params
 
 static cell_t ws_GetClients(IPluginContext *pContext, const cell_t *params)
 {
-	// TODO: Implement
-	return 1;
+	WebSocketServer *pWebsocketServer = GetWsServerPointer(pContext, params[1]);
+
+	if (!pWebsocketServer)
+	{
+		return 0;
+	}
+
+	cell_t *outputArray;
+	pContext->LocalToPhysAddr(params[2], &outputArray);
+	cell_t maxSize = params[3];
+
+	auto clients = pWebsocketServer->m_webSocketServer.getClients();
+	size_t count = 0;
+
+	HandleSecurity sec(nullptr, myself->GetIdentity());
+
+	for (const auto &client : clients)
+	{
+		if (count >= maxSize)
+			break;
+
+		WebSocketClient *pClient = new WebSocketClient(client.first.get());
+		HandleError err;
+		Handle_t handle = handlesys->CreateHandleEx(g_htWsClient, pClient, &sec, nullptr, &err);
+
+		if (handle != BAD_HANDLE)
+		{
+			pClient->m_websocket_handle = handle;
+			pClient->m_keepConnecting = true;
+			outputArray[count++] = handle;
+		}
+		else
+		{
+			delete pClient;
+		}
+	}
+
+	return count;
 }
 
 const sp_nativeinfo_t ws_natives_server[] =
@@ -265,6 +316,7 @@ const sp_nativeinfo_t ws_natives_server[] =
 	{"WebSocketServer.Stop",                   ws_Stop},
 	{"WebSocketServer.BroadcastMessage",       ws_BroadcastMessage},
 	{"WebSocketServer.SendMessageToClient",    ws_SendMessageToClient},
+	{"WebSocketServer.DisconnectClient",       ws_DisconnectClient},
 	{"WebSocketServer.ClientsCount.get",       ws_GetClientsCount},
 	{"WebSocketServer.EnablePong.get",         ws_SetOrGetPongEnable},
 	{"WebSocketServer.EnablePong.set",         ws_SetOrGetPongEnable},

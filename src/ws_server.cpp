@@ -147,3 +147,16 @@ bool WebSocketServer::sendToClient(const std::string& clientId, const std::strin
 	}
 	return false;
 }
+
+bool WebSocketServer::disconnectClient(const std::string& clientId) {
+	auto clients = m_webSocketServer.getClients();
+	
+	for (const auto& client : clients)
+	{
+		if (client.second == clientId) {
+			client.first->stop();
+			return true;
+		}
+	}
+	return false;
+}
