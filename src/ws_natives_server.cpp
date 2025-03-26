@@ -265,8 +265,44 @@ static cell_t ws_IsDeflateEnabled(IPluginContext *pContext, const cell_t *params
 
 static cell_t ws_GetClients(IPluginContext *pContext, const cell_t *params)
 {
-	// TODO: Implement
-	return 1;
+	WebSocketServer *pWebsocketServer = GetWsServerPointer(pContext, params[1]);
+
+	if (!pWebsocketServer)
+	{
+		return 0;
+	}
+
+	cell_t *outputArray;
+	pContext->LocalToPhysAddr(params[2], &outputArray);
+	cell_t maxSize = params[3];
+
+	auto clients = pWebsocketServer->m_webSocketServer.getClients();
+	size_t count = 0;
+
+	HandleSecurity sec(nullptr, myself->GetIdentity());
+
+	for (const auto &client : clients)
+	{
+		if (count >= maxSize)
+			break;
+
+		WebSocketClient *pClient = new WebSocketClient(client.first.get());
+		HandleError err;
+		Handle_t handle = handlesys->CreateHandleEx(g_htWsClient, pClient, &sec, nullptr, &err);
+
+		if (handle != BAD_HANDLE)
+		{
+			pClient->m_websocket_handle = handle;
+			pClient->m_keepConnecting = true;
+			outputArray[count++] = handle;
+		}
+		else
+		{
+			delete pClient;
+		}
+	}
+
+	return count;
 }
 
 const sp_nativeinfo_t ws_natives_server[] =
