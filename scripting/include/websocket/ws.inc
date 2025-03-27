@@ -310,13 +310,14 @@ methodmap WebSocketServer < Handle
   public native bool DisconnectClient(const char[] clientId);
 
   /**
-  * Get handles for all connected clients
+  * Gets a client ID by index
   *
-  * @param buffer           Array to store client handles
-  * @param maxSize          Maximum size of the array
-  * @return                 Number of handles stored
+  * @param index       Index of the client ID to retrieve
+  * @param buffer      String buffer to store the ID
+  * @param maxlength   Maximum length of the buffer
+  * @return            true on success, false if index is invalid
   */
-  public native int GetClients(WebSocket[] buffer, int maxSize);
+  public native bool GetClientIdByIndex(int index, char[] buffer, int maxlength);
 
   /**
   * Start the WebSocket server
@@ -339,6 +340,13 @@ methodmap WebSocketServer < Handle
   * Retrieves Per message deflate is enable
   */
   public native void IsDeflateEnabled();
+
+  /**
+  * Maximum length of client IDs (including null terminator)
+  */
+  property int MaxClientIdLength {
+    public native get();
+  }
 
   /**
   * Retrieves connected clients

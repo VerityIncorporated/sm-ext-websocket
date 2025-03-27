@@ -160,3 +160,15 @@ bool WebSocketServer::disconnectClient(const std::string& clientId) {
 	}
 	return false;
 }
+
+std::vector<std::string> WebSocketServer::getClientIds() {
+    std::vector<std::string> clientIds;
+
+    auto clients = m_webSocketServer.getClients();
+
+    for (const auto& client : clients) {
+        clientIds.push_back(client.second);
+    }
+
+    return clientIds;
+}
