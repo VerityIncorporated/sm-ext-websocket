@@ -263,46 +263,45 @@ static cell_t ws_IsDeflateEnabled(IPluginContext *pContext, const cell_t *params
 	return pWebsocketServer->m_webSocketServer.isPerMessageDeflateEnabled();
 }
 
-static cell_t ws_GetClients(IPluginContext *pContext, const cell_t *params)
+static cell_t ws_GetClientIdByIndex(IPluginContext *pContext, const cell_t *params)
 {
-	WebSocketServer *pWebsocketServer = GetWsServerPointer(pContext, params[1]);
+    WebSocketServer *pWebsocketServer = GetWsServerPointer(pContext, params[1]);
+    if (!pWebsocketServer)
+    {
+        return 0;
+    }
 
-	if (!pWebsocketServer)
-	{
-		return 0;
-	}
+    cell_t index = params[2];
+    const auto& ids = pWebsocketServer->getClientIds();
 
-	cell_t *outputArray;
-	pContext->LocalToPhysAddr(params[2], &outputArray);
-	cell_t maxSize = params[3];
+    if (index < 0 || static_cast<size_t>(index) >= ids.size())
+    {
+        return 0;
+    }
 
-	auto clients = pWebsocketServer->m_webSocketServer.getClients();
-	size_t count = 0;
+    pContext->StringToLocal(params[3], params[4], ids[index].c_str());
 
-	HandleSecurity sec(nullptr, myself->GetIdentity());
+    return 1;
+}
 
-	for (const auto &client : clients)
-	{
-		if (count >= maxSize)
-			break;
+static cell_t ws_GetMaxClientIdLength(IPluginContext *pContext, const cell_t *params)
+{
+    WebSocketServer *pWebsocketServer = GetWsServerPointer(pContext, params[1]);
+    if (!pWebsocketServer)
+    {
+        return 0;
+    }
 
-		WebSocketClient *pClient = new WebSocketClient(client.first.get());
-		HandleError err;
-		Handle_t handle = handlesys->CreateHandleEx(g_htWsClient, pClient, &sec, nullptr, &err);
+    const auto& ids = pWebsocketServer->getClientIds();
+    size_t maxLen = 0;
 
-		if (handle != BAD_HANDLE)
-		{
-			pClient->m_websocket_handle = handle;
-			pClient->m_keepConnecting = true;
-			outputArray[count++] = handle;
-		}
-		else
-		{
-			delete pClient;
-		}
-	}
+    for (const auto& id : ids)
+    {
+        if (id.length() > maxLen)
+            maxLen = id.length();
+    }
 
-	return count;
+    return static_cast<cell_t>(maxLen + 1);
 }
 
 const sp_nativeinfo_t ws_natives_server[] =
@@ -320,7 +319,8 @@ const sp_nativeinfo_t ws_natives_server[] =
 	{"WebSocketServer.ClientsCount.get",       ws_GetClientsCount},
 	{"WebSocketServer.EnablePong.get",         ws_SetOrGetPongEnable},
 	{"WebSocketServer.EnablePong.set",         ws_SetOrGetPongEnable},
-	{"WebSocketServer.GetClients",             ws_GetClients},
+	{"WebSocketServer.GetClientIdByIndex",     ws_GetClientIdByIndex},
+	{"WebSocketServer.MaxClientIdLength.get",  ws_GetMaxClientIdLength},
 	{"WebSocketServer.DisableDeflate",         ws_DisableDeflate},
 	{"WebSocketServer.IsDeflateEnabled",       ws_IsDeflateEnabled},
 	{nullptr, nullptr}

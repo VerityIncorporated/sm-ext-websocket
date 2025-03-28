@@ -15,6 +15,7 @@ public:
 	void broadcastMessage(const std::string& message);
 	bool sendToClient(const std::string& clientId, const std::string& message);
 	bool disconnectClient(const std::string& clientId);
+	std::vector<std::string> getClientIds();
 	
 	ix::WebSocketServer m_webSocketServer;
 	Handle_t m_webSocketServer_handle = BAD_HANDLE;
